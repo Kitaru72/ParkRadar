@@ -1,0 +1,6 @@
+.server.pid
+__pycache__/
+*.pyc
+.venv/
+app/data/parkradar.db
+app/data/uploads/

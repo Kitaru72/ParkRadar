@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f766e" />
+    <title>ParkRadar</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell reveal">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">PR</div>
+          <div class="brand-copy">
+            <h1>ParkRadar</h1>
+            <p class="muted">Понимаем парковку до того, как вы приедете</p>
+          </div>
+        </div>
+        <div class="chip-row">
+          <span class="chip">PWA для Android</span>
+          <span class="chip">Trip Monitoring</span>
+          <a class="chip" href="/admin">Admin UI</a>
+        </div>
+      </header>
+
+      <section class="hero reveal">
+        <div class="hero-copy">
+          <div class="eyebrow">Hackathon-ready MVP</div>
+          <h2>Поиск парковки без кругов по двору.</h2>
+          <p>
+            ParkRadar анализирует публичные камеры в тестовом режиме и показывает только полезный итог:
+            сколько свободных мест рядом с нужным адресом, по каким классам машин и как ситуация меняется по мере поездки.
+          </p>
+          <div class="hero-notes">
+            <div class="mini-card">
+              <span class="muted">Радиус поиска</span>
+              <strong>до 1 км</strong>
+            </div>
+            <div class="mini-card">
+              <span class="muted">Источники</span>
+              <strong>камеры + ingestion</strong>
+            </div>
+            <div class="mini-card">
+              <span class="muted">Интерфейс</span>
+              <strong>Web + Android PWA</strong>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Найти парковку</h3>
+              <p class="muted">Введите адрес или ссылку из карт. Для демо можно использовать Малышева 51.</p>
+            </div>
+          </div>
+          <form id="search-form" class="search-form">
+            <div class="field">
+              <label for="query">Адрес или ссылка из карт</label>
+              <input id="query" name="query" placeholder="Екатеринбург, улица Малышева 51" required />
+            </div>
+            <div class="field">
+              <label for="radius">Радиус поиска</label>
+              <select id="radius" name="radius">
+                <option value="500">500 м</option>
+                <option value="1000" selected>1000 м</option>
+              </select>
+            </div>
+            <div class="button-row">
+              <button class="btn btn-primary" id="search-button" type="submit">Запустить поиск</button>
+              <button class="btn btn-secondary" id="demo-button" type="button">Демо-адрес</button>
+            </div>
+          </form>
+        </aside>
+      </section>
+
+      <section class="layout">
+        <div class="stack">
+          <article class="panel reveal">
+            <div class="panel-header">
+              <div>
+                <h3>Результат поиска</h3>
+                <p class="muted">Показываем только агрегированную доступность, без первичных кадров в пользовательском потоке.</p>
+              </div>
+              <div id="availability-badge" class="availability-badge">Ожидаем запрос</div>
+            </div>
+            <div id="result-empty" class="empty-state">Сначала выполните поиск, чтобы увидеть свободные места, классы машин и ближайшие источники данных.</div>
+            <div id="result-content" hidden>
+              <div class="stats-grid" id="stats-grid"></div>
+              <div class="panel" style="margin-top: 16px; padding: 18px;">
+                <div class="panel-header">
+                  <div>
+                    <h3>Распределение по классам машин</h3>
+                    <p class="muted">A / B / C / D / PICKUP</p>
+                  </div>
+                </div>
+                <div class="class-grid" id="class-grid"></div>
+              </div>
+              <div class="panel" style="margin-top: 16px; padding: 18px;">
+                <div class="panel-header">
+                  <div>
+                    <h3>Источники данных</h3>
+                    <p class="muted">Ближайшие камеры, вошедшие в расчет</p>
+                  </div>
+                </div>
+                <div class="source-grid" id="source-grid"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel reveal">
+            <div class="panel-header">
+              <div>
+                <h3>Мониторинг поездки</h3>
+                <p class="muted">Half ETA, pre-arrival и fallback +15 мин. Уведомления приходят через pull, push-архитектура заложена.</p>
+              </div>
+            </div>
+            <div class="button-row" style="margin-bottom: 14px;">
+              <button class="btn btn-primary" id="start-trip" type="button" disabled>Запустить мониторинг</button>
+              <button class="btn btn-secondary" id="refresh-notifications" type="button" disabled>Обновить уведомления</button>
+              <button class="btn btn-secondary" id="cancel-trip" type="button" disabled>Остановить сессию</button>
+            </div>
+            <div class="field" style="max-width: 240px;">
+              <label for="eta">ETA, минут</label>
+              <input id="eta" type="number" min="1" max="120" value="20" />
+            </div>
+            <div id="trip-meta" class="footer-note">Сессия еще не создана.</div>
+            <div id="notifications" class="timeline" style="margin-top: 16px;"></div>
+          </article>
+        </div>
+
+        <aside class="stack">
+          <article class="panel reveal">
+            <div class="panel-header">
+              <div>
+                <h3>Ценность для пользователя</h3>
+                <p class="muted">Что слышит жюри в одной минуте</p>
+              </div>
+            </div>
+            <div class="list">
+              <div class="list-item">
+                <span class="inline-tag">Проблема</span>
+                Люди тратят время, нервы и топливо на поиск места около дома.
+              </div>
+              <div class="list-item">
+                <span class="inline-tag">Решение</span>
+                Уже существующие публичные камеры превращаются в сервис оценки парковочной доступности.
+              </div>
+              <div class="list-item">
+                <span class="inline-tag">Почему MVP жизнеспособен</span>
+                В test mode можно доказать ценность продукта без дорогой интеграции и нового железа.
+              </div>
+            </div>
+          </article>
+
+          <article class="panel reveal">
+            <div class="panel-header">
+              <div>
+                <h3>Демо-подсказки</h3>
+                <p class="muted">Чтобы защита шла гладко</p>
+              </div>
+            </div>
+            <div class="kpi-grid">
+              <div class="kpi">
+                <span class="muted">Попробуйте запрос</span>
+                <strong>Малышева 51</strong>
+              </div>
+              <div class="kpi">
+                <span class="muted">Логин админа</span>
+                <strong>admin@parkradar.local</strong>
+              </div>
+            </div>
+            <p class="footer-note">
+              Юридическая рамка для защиты: используем только разрешенные публичные источники и не показываем первичные кадры пользователю.
+            </p>
+          </article>
+        </aside>
+      </section>
+    </main>
+
+    <script src="/static/app.js" defer></script>
+  </body>
+</html>

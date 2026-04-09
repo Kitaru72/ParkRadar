@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ParkRadar Admin</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell reveal">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">PR</div>
+          <div class="brand-copy">
+            <h1>ParkRadar Admin</h1>
+            <p class="muted">Управление камерами, ingestion и статистикой</p>
+          </div>
+        </div>
+        <div class="chip-row">
+          <a class="chip" href="/">Пользовательский экран</a>
+          <button class="chip" id="logout-button" type="button">Выйти</button>
+        </div>
+      </header>
+
+      <section class="admin-grid">
+        <div class="stack">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Вход администратора</h3>
+                <p class="muted">Для демо используйте стандартную учетку</p>
+              </div>
+            </div>
+            <form id="login-form" class="search-form">
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" value="admin@parkradar.local" />
+              </div>
+              <div class="field">
+                <label for="password">Пароль</label>
+                <input id="password" type="password" value="Admin123!" />
+              </div>
+              <button class="btn btn-primary" type="submit">Войти</button>
+              <div id="login-status" class="muted"></div>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Новая камера</h3>
+                <p class="muted">Ручное добавление камеры в реестр</p>
+              </div>
+            </div>
+            <form id="camera-form" class="search-form">
+              <div class="field"><label>Название</label><input name="name" required /></div>
+              <div class="field"><label>Двор / зона</label><input name="courtyard_name" required /></div>
+              <div class="field"><label>Latitude</label><input name="lat" required /></div>
+              <div class="field"><label>Longitude</label><input name="lon" required /></div>
+              <div class="field"><label>Источник</label><input name="source_url" /></div>
+              <div class="field"><label>Примечание</label><input name="notes" /></div>
+              <button class="btn btn-secondary" type="submit">Добавить камеру</button>
+            </form>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Test-mode screenshot</h3>
+                <p class="muted">Загрузка скриншота и ручной ввод количества свободных мест</p>
+              </div>
+            </div>
+            <form id="snapshot-form" class="search-form" enctype="multipart/form-data">
+              <div class="field"><label>Камера</label><select name="camera_id" id="camera-select"></select></div>
+              <div class="field"><label>Скриншот</label><input name="file" type="file" accept="image/*" /></div>
+              <div class="kpi-grid">
+                <div class="field"><label>free_a</label><input name="free_a" type="number" value="1" /></div>
+                <div class="field"><label>free_b</label><input name="free_b" type="number" value="2" /></div>
+                <div class="field"><label>free_c</label><input name="free_c" type="number" value="2" /></div>
+                <div class="field"><label>free_d</label><input name="free_d" type="number" value="1" /></div>
+                <div class="field"><label>free_pickup</label><input name="free_pickup" type="number" value="0" /></div>
+              </div>
+              <div class="field">
+                <label>Статус камеры</label>
+                <select name="status">
+                  <option value="ok">ok</option>
+                  <option value="unknown">unknown</option>
+                  <option value="camera_unreachable">camera_unreachable</option>
+                </select>
+              </div>
+              <button class="btn btn-warn" type="submit">Сохранить snapshot</button>
+            </form>
+          </article>
+        </div>
+
+        <div class="stack">
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Операционный дашборд</h3>
+                <p class="muted">Статистика запросов, availability и ручной прогон due-check</p>
+              </div>
+              <div class="button-row">
+                <button class="btn btn-secondary" id="refresh-admin" type="button">Обновить</button>
+                <button class="btn btn-primary" id="run-due-check" type="button">Run due-check</button>
+              </div>
+            </div>
+            <div class="stats-grid" id="admin-kpis"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Реестр камер</h3>
+                <p class="muted">Статус приема скриншотов и текущие источники</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Камера</th>
+                    <th>Локация</th>
+                    <th>Статус</th>
+                    <th>Последний захват</th>
+                    <th>Источник</th>
+                  </tr>
+                </thead>
+                <tbody id="camera-table"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/admin.js" defer></script>
+  </body>
+</html>

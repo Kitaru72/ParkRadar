@@ -1,0 +1,10 @@
+{
+  "name": "ParkRadar",
+  "short_name": "ParkRadar",
+  "description": "Сервис оценки свободных парковочных мест по адресу",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#f2efe7",
+  "theme_color": "#0f766e",
+  "icons": []
+}
